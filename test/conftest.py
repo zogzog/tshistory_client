@@ -63,14 +63,14 @@ class WebTester(webtest.TestApp):
                                expect_errors=expect_errors)
 
 
-def get_request_bridge(client, request):
+def read_request_bridge(client, request):
     resp = client.get(request.url,
                       params=request.body,
                       headers=request.headers)
     return (resp.status_code, resp.headers, resp.body)
 
 
-def patch_request_bridge(method):
+def write_request_bridge(method):
     def bridge(request):
         resp = method(request.url,
                       params=request.body,
@@ -87,12 +87,22 @@ def client(engine):
     with responses.RequestsMock(assert_all_requests_are_fired=False) as resp:
         resp.add_callback(
             responses.GET, 'http://test-uri/series/state',
-            callback=partial(get_request_bridge, wsgitester)
+            callback=partial(read_request_bridge, wsgitester)
         )
 
         resp.add_callback(
             responses.PATCH, 'http://test-uri/series/state',
-            callback=patch_request_bridge(wsgitester.patch)
+            callback=write_request_bridge(wsgitester.patch)
+        )
+
+        resp.add_callback(
+            responses.GET, 'http://test-uri/series/metadata',
+            callback=partial(read_request_bridge, wsgitester)
+        )
+
+        resp.add_callback(
+            responses.PUT, 'http://test-uri/series/metadata',
+            callback=write_request_bridge(wsgitester.put)
         )
 
         yield api.Client(URI)
