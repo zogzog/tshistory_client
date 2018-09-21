@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 from functools import partial
 
@@ -54,7 +55,7 @@ class WebTester(webtest.TestApp):
         url = self._remove_fragment(url)
         req = self.RequestClass.blank(url, environ)
 
-        req.environ['wsgi.input'] = io.BytesIO(params)
+        req.environ['wsgi.input'] = io.BytesIO(params.encode('utf-8'))
         req.content_length = len(params)
         if headers:
             req.headers.update(headers)
@@ -68,6 +69,16 @@ def get_request_bridge(client, request):
                       headers=request.headers)
     return (resp.status_code, resp.headers, resp.body)
 
+
+def patch_request_bridge(method):
+    def bridge(request):
+        resp = method(request.url,
+                      params=request.body,
+                      headers=request.headers)
+        return (resp.status_code, resp.headers, resp.body)
+    return bridge
+
+
 URI = 'http://test-uri'
 
 @pytest.fixture(scope='session')
@@ -77,6 +88,11 @@ def client(engine):
         resp.add_callback(
             responses.GET, 'http://test-uri/series/state',
             callback=partial(get_request_bridge, wsgitester)
+        )
+
+        resp.add_callback(
+            responses.PATCH, 'http://test-uri/series/state',
+            callback=patch_request_bridge(wsgitester.patch)
         )
 
         yield api.Client(URI)
