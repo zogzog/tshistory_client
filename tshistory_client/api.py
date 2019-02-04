@@ -14,6 +14,12 @@ class Client:
         self.baseuri = uri
         self.tzcache = {}
 
+    def exists(self, name):
+        meta = self.metadata(name)
+        if 'message' in meta and meta['message'].endswith('does not exists'):
+            return False
+        return True
+
     def insert(self, name, series, author):
         res = requests.patch(f'{self.baseuri}/series/state', data={
             'name': name,

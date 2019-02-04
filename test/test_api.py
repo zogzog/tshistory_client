@@ -5,6 +5,8 @@ def test_base(client):
     ts = client.get('no-such-series')
     assert ts is None
 
+    assert not client.exists('no-such-series')
+
     meta = client.metadata('no-such-series')
     assert meta == {
         'message': '`no-such-series` does not exists'
@@ -12,6 +14,7 @@ def test_base(client):
 
     series_in = genserie(utcdt(2018, 1, 1), 'H', 3)
     client.insert('test', series_in, 'Babar')
+    assert client.exists('test')
 
     # now let's get it back
     ts = client.get('test')
