@@ -9,6 +9,7 @@ import responses
 from sqlalchemy import create_engine, MetaData
 
 from tshistory import schema
+from tshistory.tsio import TimeSerie
 from tshistory_rest import app
 from tshistory_client import api
 
@@ -25,6 +26,13 @@ def engine(request):
     schema.reset(e)
     schema.init(e, MetaData())
     return e
+
+
+@pytest.fixture
+def tsh(request, engine):
+    tsh = TimeSerie()
+    tsh._testing = True
+    return tsh
 
 
 class WebTester(webtest.TestApp):

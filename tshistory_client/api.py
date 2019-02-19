@@ -20,12 +20,12 @@ class Client:
             return False
         return True
 
-    def insert(self, name, series, author):
+    def insert(self, name, series, author, insertion_date=None):
         res = requests.patch(f'{self.baseuri}/series/state', data={
             'name': name,
             'author': author,
             'series': tojson(series),
-            'insertion_date': utcdt(2018, 1, 1).isoformat(),
+            'insertion_date': insertion_date.isoformat() if insertion_date else None,
             'tzaware': tzaware_serie(series)
         })
         assert res.status_code in (200, 201)

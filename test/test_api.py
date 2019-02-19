@@ -1,7 +1,7 @@
 from tshistory.testutil import utcdt, genserie, assert_df
 
 
-def test_base(client):
+def test_base(client, engine, tsh):
     ts = client.get('no-such-series')
     assert ts is None
 
@@ -13,7 +13,8 @@ def test_base(client):
     }
 
     series_in = genserie(utcdt(2018, 1, 1), 'H', 3)
-    client.insert('test', series_in, 'Babar')
+    client.insert('test', series_in, 'Babar',
+                  insertion_date=utcdt(2019, 1, 1))
     assert client.exists('test')
 
     # now let's get it back
@@ -41,3 +42,11 @@ def test_base(client):
     assert meta == {
         'desc': 'banana spot price',
     }
+
+    # check the insertion_date
+    series_in = genserie(utcdt(2018, 1, 2), 'H', 3)
+    client.insert('test', series_in, 'Babar')
+
+    d1, d2 = tsh.insertion_dates(engine, 'test')
+    assert d1 == utcdt(2019, 1, 1)
+    assert d2 > d1
