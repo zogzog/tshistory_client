@@ -31,9 +31,7 @@ def engine(request):
 
 @pytest.fixture
 def tsh(request, engine):
-    tsh = TimeSerie()
-    tsh._testing = True
-    return tsh
+    return TimeSerie()
 
 
 class WebTester(webtest.TestApp):
