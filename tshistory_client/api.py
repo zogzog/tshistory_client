@@ -1,4 +1,6 @@
 import json
+import threading
+
 import requests
 import pandas as pd
 
@@ -9,6 +11,7 @@ from tshistory.testutil import utcdt
 class Client:
     baseuri = None
     tzcache = None
+    _lock = threading.Lock()
 
     def __init__(self, uri):
         self.baseuri = uri
@@ -52,6 +55,9 @@ class Client:
         if res.status_code == 404:
             return None
         assert res.status_code == 200
-        if name not in self.tzcache:
-            self.tzcache[name] = self.metadata(name, internal=True)['tzaware']
-        return fromjson(res.text, name, self.tzcache[name])
+
+        with self._lock:
+            if name not in self.tzcache:
+                self.tzcache[name] = self.metadata(name, internal=True)['tzaware']
+            tzinfo = self.tzcache[name]
+        return fromjson(res.text, name, tzinfo)
