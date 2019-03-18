@@ -8,7 +8,7 @@ from pytest_sa_pg import db
 import responses
 from sqlalchemy import create_engine, MetaData
 
-from tshistory import schema
+from tshistory.schema import tsschema, init_schemas, reset_schemas
 from tshistory.tsio import TimeSerie
 from tshistory_rest import app
 from tshistory_client import api
@@ -23,8 +23,9 @@ def engine(request):
         'log_timezone': 'UTC'}
     )
     e = create_engine('postgresql://localhost:5433/postgres')
-    schema.reset(e)
-    schema.init(e, MetaData())
+    tsschema()
+    reset_schemas(e)
+    init_schemas(e, MetaData())
     return e
 
 
