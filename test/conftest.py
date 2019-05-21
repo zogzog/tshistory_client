@@ -6,10 +6,10 @@ import webtest
 import pytest
 from pytest_sa_pg import db
 import responses
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 
-from tshistory.schema import tsschema, init_schemas, reset_schemas
-from tshistory.tsio import TimeSerie
+from tshistory.schema import tsschema
+from tshistory.tsio import timeseries
 from tshistory_rest import app
 from tshistory_client import api
 
@@ -23,15 +23,14 @@ def engine(request):
         'log_timezone': 'UTC'}
     )
     e = create_engine('postgresql://localhost:5433/postgres')
-    tsschema()
-    reset_schemas(e)
-    init_schemas(e, MetaData())
+    sch = tsschema()
+    sch.create(e)
     return e
 
 
 @pytest.fixture
 def tsh(request, engine):
-    return TimeSerie()
+    return timeseries()
 
 
 class WebTester(webtest.TestApp):
