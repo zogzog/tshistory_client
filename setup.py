@@ -11,7 +11,7 @@ setup(name='tshistory_client',
       packages=['tshistory_client'],
       install_requires=[
           'requests',
-          'pandas ~= 0.23.3',
+          'pandas',
           'pytest_sa_pg',
       ],
       tests_require=[
