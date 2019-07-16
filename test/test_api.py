@@ -31,7 +31,6 @@ def test_base(client, engine, tsh):
         'index_type': 'datetime64[ns, UTC]',
         'value_type': 'float64',
         'index_dtype': '|M8[ns]',
-        'index_names': [],
         'value_dtype': '<f8'
     }
 
