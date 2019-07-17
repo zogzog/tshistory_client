@@ -61,3 +61,9 @@ class Client:
                 self.tzcache[name] = self.metadata(name, internal=True)['tzaware']
             tzinfo = self.tzcache[name]
         return fromjson(res.text, name, tzinfo)
+
+    def list_series(self):
+        res = requests.get(f'{self.baseuri}/series/catalog')
+        assert res.status_code == 200
+
+        return res.json()

@@ -49,3 +49,11 @@ def test_base(client, engine, tsh):
     d1, d2 = tsh.insertion_dates(engine, 'test')
     assert d1 == utcdt(2019, 1, 1)
     assert d2 > d1
+
+    client.insert('test2', series_in, 'Babar')
+    series = client.list_series()
+    assert series == {
+        'test': 'primary',
+        'test2': 'primary'
+    }
+
