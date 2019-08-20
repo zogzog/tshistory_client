@@ -25,6 +25,22 @@ def test_base(client, engine, tsh):
 2018-01-01 02:00:00+00:00    2.0
 """, ts)
 
+    ts = client.get(
+        'test',
+        from_value_date=utcdt(2018, 1, 1, 2)
+    )
+    assert_df("""
+2018-01-01 02:00:00+00:00    2.0
+""", ts)
+
+    ts = client.get(
+        'test',
+        to_value_date=utcdt(2018, 1, 1, 0)
+    )
+    assert_df("""
+2018-01-01 00:00:00+00:00    0.0
+""", ts)
+
     meta = client.metadata('test', internal=True)
     assert meta == {
         'tzaware': True,
@@ -44,7 +60,15 @@ def test_base(client, engine, tsh):
 
     # check the insertion_date
     series_in = genserie(utcdt(2018, 1, 2), 'H', 3)
-    client.insert('test', series_in, 'Babar')
+    client.insert('test', series_in, 'Babar',
+                  insertion_date=utcdt(2019, 1, 2))
+
+    v1 = client.get('test', revision_date=utcdt(2019, 1, 1))
+    assert_df("""
+2018-01-01 00:00:00+00:00    0.0
+2018-01-01 01:00:00+00:00    1.0
+2018-01-01 02:00:00+00:00    2.0
+""", v1)
 
     d1, d2 = tsh.insertion_dates(engine, 'test')
     assert d1 == utcdt(2019, 1, 1)

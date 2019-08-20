@@ -3,9 +3,22 @@ import threading
 
 import requests
 import pandas as pd
+import pytz
 
 from tshistory.util import fromjson, tojson, tzaware_serie
 from tshistory.testutil import utcdt
+
+
+def strft(dt):
+    """Format dt object into str.
+
+    We first make sure dt is localized (aka non-naive). If dt is naive
+    UTC is automatically added as tzinfo.
+    """
+    is_naive = dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None
+    if is_naive:
+        dt = pytz.UTC.localize(dt)
+    return dt.isoformat()
 
 
 class Client:
@@ -48,12 +61,25 @@ class Client:
         })
         return res.json()
 
-    def get(self, name):
-        res = requests.get(f'{self.baseuri}/series/state', params={
+    def get(self, name,
+            revision_date=None,
+            from_value_date=None,
+            to_value_date=None):
+        args = {
             'name': name
-        })
+        }
+        if revision_date:
+            args['insertion_date'] = strft(revision_date)
+        if from_value_date:
+            args['from_value_date'] = strft(from_value_date)
+        if to_value_date:
+            args['to_value_date'] = strft(to_value_date)
+        res = requests.get(
+            f'{self.baseuri}/series/state', params=args
+        )
         if res.status_code == 404:
             return None
+        res.raise_for_status()
         assert res.status_code == 200
 
         with self._lock:
