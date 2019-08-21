@@ -88,6 +88,31 @@ class Client:
             tzinfo = self.tzcache[name]
         return fromjson(res.text, name, tzinfo)
 
+    def staircase(self, name, delta,
+            from_value_date=None,
+            to_value_date=None):
+        args = {
+            'name': name,
+            'delta': delta
+        }
+        if from_value_date:
+            args['from_value_date'] = strft(from_value_date)
+        if to_value_date:
+            args['to_value_date'] = strft(to_value_date)
+        res = requests.get(
+            f'{self.baseuri}/series/staircase', params=args
+        )
+        if res.status_code == 404:
+            return None
+        res.raise_for_status()
+        assert res.status_code == 200
+
+        with self._lock:
+            if name not in self.tzcache:
+                self.tzcache[name] = self.metadata(name, internal=True)['tzaware']
+            tzinfo = self.tzcache[name]
+        return fromjson(res.text, name, tzinfo)
+
     def list_series(self):
         res = requests.get(f'{self.baseuri}/series/catalog')
         assert res.status_code == 200
