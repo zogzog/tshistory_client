@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 from tshistory.util import (
-    binary_unpack,
+    nary_unpack,
     fromjson,
     numpy_deserialize,
     tojson,
@@ -90,11 +90,10 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        bmeta, bdata = binary_unpack(
+        bmeta, bindex, bvalues = nary_unpack(
             zlib.decompress(res.content)
         )
         meta = json.loads(bmeta)
-        bindex, bvalues = binary_unpack(bdata)
         index, values = numpy_deserialize(bindex, bvalues, meta)
         series = pd.Series(values, index=index)
         if meta['tzaware']:
@@ -106,7 +105,7 @@ class Client:
             to_value_date=None):
         args = {
             'name': name,
-            'delta': delta
+            'delta': delta,
         }
         if from_value_date:
             args['from_value_date'] = strft(from_value_date)
