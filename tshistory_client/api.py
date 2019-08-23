@@ -1,5 +1,4 @@
 import json
-import threading
 import zlib
 
 import requests
@@ -43,7 +42,6 @@ def decodeseries(bytestream):
 class Client:
     baseuri = None
     tzcache = None
-    _lock = threading.Lock()
 
     def __init__(self, uri):
         self.baseuri = uri
@@ -110,6 +108,7 @@ class Client:
         args = {
             'name': name,
             'delta': delta,
+            'mode': 'numpy'
         }
         if from_value_date:
             args['from_value_date'] = strft(from_value_date)
@@ -123,11 +122,7 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        with self._lock:
-            if name not in self.tzcache:
-                self.tzcache[name] = self.metadata(name, internal=True)['tzaware']
-            tzinfo = self.tzcache[name]
-        return fromjson(res.text, name, tzinfo)
+        return decodeseries(res.content)
 
     def list_series(self):
         res = requests.get(f'{self.baseuri}/series/catalog')
