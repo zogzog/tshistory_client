@@ -28,6 +28,18 @@ def strft(dt):
     return dt.isoformat()
 
 
+def decodeseries(bytestream):
+    bmeta, bindex, bvalues = nary_unpack(
+        zlib.decompress(bytestream)
+    )
+    meta = json.loads(bmeta)
+    index, values = numpy_deserialize(bindex, bvalues, meta)
+    series = pd.Series(values, index=index)
+    if meta['tzaware']:
+        series = series.tz_localize('UTC')
+    return series
+
+
 class Client:
     baseuri = None
     tzcache = None
@@ -90,15 +102,7 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        bmeta, bindex, bvalues = nary_unpack(
-            zlib.decompress(res.content)
-        )
-        meta = json.loads(bmeta)
-        index, values = numpy_deserialize(bindex, bvalues, meta)
-        series = pd.Series(values, index=index)
-        if meta['tzaware']:
-            series = series.tz_localize('UTC')
-        return series
+        return decodeseries(res.content)
 
     def staircase(self, name, delta,
             from_value_date=None,
