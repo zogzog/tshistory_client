@@ -42,6 +42,14 @@ def test_base(client, engine, tsh):
 2018-01-01 00:00:00+00:00    0.0
 """, ts)
 
+    # out of range
+    ts = client.get(
+        'test',
+        from_value_date=utcdt(2020, 1, 1, 2),
+        to_value_date=utcdt(2020, 1, 1, 2)
+    )
+    assert len(ts) == 0
+
     meta = client.metadata('test', internal=True)
     assert meta == {
         'tzaware': True,
