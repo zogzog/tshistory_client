@@ -1,11 +1,18 @@
 import json
 import threading
+import zlib
 
 import requests
 import pandas as pd
 import pytz
 
-from tshistory.util import fromjson, tojson, tzaware_serie
+from tshistory.util import (
+    binary_unpack,
+    fromjson,
+    numpy_deserialize,
+    tojson,
+    tzaware_serie
+)
 from tshistory.testutil import utcdt
 
 
@@ -66,7 +73,8 @@ class Client:
             from_value_date=None,
             to_value_date=None):
         args = {
-            'name': name
+            'name': name,
+            'mode': 'numpy'
         }
         if revision_date:
             args['insertion_date'] = strft(revision_date)
@@ -82,11 +90,16 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        with self._lock:
-            if name not in self.tzcache:
-                self.tzcache[name] = self.metadata(name, internal=True)['tzaware']
-            tzinfo = self.tzcache[name]
-        return fromjson(res.text, name, tzinfo)
+        bmeta, bdata = binary_unpack(
+            zlib.decompress(res.content)
+        )
+        meta = json.loads(bmeta)
+        bindex, bvalues = binary_unpack(bdata)
+        index, values = numpy_deserialize(bindex, bvalues, meta)
+        series = pd.Series(values, index=index)
+        if meta['tzaware']:
+            series = series.tz_localize('UTC')
+        return series
 
     def staircase(self, name, delta,
             from_value_date=None,
