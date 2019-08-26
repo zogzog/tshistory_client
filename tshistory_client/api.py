@@ -10,7 +10,8 @@ from tshistory.util import (
     fromjson,
     numpy_deserialize,
     tojson,
-    tzaware_serie
+    tzaware_serie,
+    unpack_history
 )
 from tshistory.testutil import utcdt
 
@@ -123,6 +124,34 @@ class Client:
         assert res.status_code == 200
 
         return decodeseries(res.content)
+
+    def history(self, name,
+                from_insertion_date=None,
+                to_insertion_date=None,
+                from_value_date=None,
+                to_value_date=None):
+        args = {
+            'name': name,
+            'mode': 'numpy'
+        }
+        if from_insertion_date:
+            args['from_insertion_date'] = strft(from_insertion_date)
+        if to_insertion_date:
+            args['to_insertion_date'] = strft(to_insertion_date)
+        if from_value_date:
+            args['from_value_date'] = strft(from_value_date)
+        if to_value_date:
+            args['to_value_date'] = strft(to_value_date)
+        res = requests.get(
+            f'{self.baseuri}/series/history', params=args
+        )
+        if res.status_code == 404:
+            return None
+        res.raise_for_status()
+        assert res.status_code == 200
+
+        meta, hist = unpack_history(res.content)
+        return hist
 
     def list_series(self):
         res = requests.get(f'{self.baseuri}/series/catalog')

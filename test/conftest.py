@@ -102,6 +102,11 @@ def client(engine):
         )
 
         resp.add_callback(
+            responses.GET, 'http://test-uri/series/history',
+            callback=partial(read_request_bridge, wsgitester)
+        )
+
+        resp.add_callback(
             responses.GET, 'http://test-uri/series/catalog',
             callback=partial(read_request_bridge, wsgitester)
         )

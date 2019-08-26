@@ -1,5 +1,11 @@
 import pandas as pd
-from tshistory.testutil import utcdt, genserie, assert_df
+
+from tshistory.testutil import (
+    assert_df,
+    assert_hist,
+    genserie,
+    utcdt
+)
 
 
 def test_base(client, engine, tsh):
@@ -91,7 +97,7 @@ def test_base(client, engine, tsh):
     }
 
 
-def test_staircase(client, tsh):
+def test_staircase_history(client, tsh):
     # each days we insert 7 data points
     for idx, idate in enumerate(pd.date_range(start=utcdt(2015, 1, 1),
                                               end=utcdt(2015, 1, 4),
@@ -118,3 +124,31 @@ def test_staircase(client, tsh):
 2015-01-02 04:00:00+00:00    4.0
 2015-01-02 05:00:00+00:00    5.0
 """, series)
+
+    hist = client.history('staircase')
+    assert len(hist) == 4
+    hist = client.history(
+        'staircase',
+        from_insertion_date=utcdt(2015, 1, 2),
+        to_insertion_date=utcdt(2015, 1, 3)
+    )
+    assert len(hist) == 2
+    hist = client.history(
+        'staircase',
+        from_value_date=utcdt(2015, 1, 1, 3),
+        to_value_date=utcdt(2015, 1, 2, 1)
+    )
+
+    assert_hist("""
+insertion_date             value_date         
+2015-01-01 00:00:00+00:00  2015-01-01 03:00:00    3.0
+                           2015-01-01 04:00:00    4.0
+                           2015-01-01 05:00:00    5.0
+                           2015-01-01 06:00:00    6.0
+2015-01-02 00:00:00+00:00  2015-01-01 03:00:00    3.0
+                           2015-01-01 04:00:00    4.0
+                           2015-01-01 05:00:00    5.0
+                           2015-01-01 06:00:00    6.0
+                           2015-01-02 00:00:00    0.0
+                           2015-01-02 01:00:00    1.0
+""", hist)
