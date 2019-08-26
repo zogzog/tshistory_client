@@ -28,7 +28,7 @@ def strft(dt):
     return dt.isoformat()
 
 
-def decodeseries(bytestream):
+def decodeseries(name, bytestream):
     bmeta, bindex, bvalues = nary_unpack(
         zlib.decompress(bytestream)
     )
@@ -37,6 +37,7 @@ def decodeseries(bytestream):
     series = pd.Series(values, index=index)
     if meta['tzaware']:
         series = series.tz_localize('UTC')
+    series.name = name
     return series
 
 
@@ -101,7 +102,7 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        return decodeseries(res.content)
+        return decodeseries(name, res.content)
 
     def staircase(self, name, delta,
             from_value_date=None,
@@ -123,7 +124,7 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        return decodeseries(res.content)
+        return decodeseries(name, res.content)
 
     def history(self, name,
                 from_insertion_date=None,
@@ -151,6 +152,8 @@ class Client:
         assert res.status_code == 200
 
         meta, hist = unpack_history(res.content)
+        for series in hist.values():
+            series.name = name
         return hist
 
     def list_series(self):

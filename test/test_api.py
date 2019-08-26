@@ -55,6 +55,7 @@ def test_base(client, engine, tsh):
         to_value_date=utcdt(2020, 1, 1, 2)
     )
     assert len(ts) == 0
+    assert ts.name == 'test'
 
     meta = client.metadata('test', internal=True)
     assert meta == {
@@ -115,6 +116,7 @@ def test_staircase_history(client, tsh):
         from_value_date=utcdt(2015, 1, 1, 4),
         to_value_date=utcdt(2015, 1, 2, 5)
     )
+    assert series.name == 'staircase'
 
     assert_df("""
 2015-01-01 04:00:00+00:00    4.0
@@ -137,6 +139,11 @@ def test_staircase_history(client, tsh):
         'staircase',
         from_value_date=utcdt(2015, 1, 1, 3),
         to_value_date=utcdt(2015, 1, 2, 1)
+    )
+
+    assert all(
+        series.name == 'staircase'
+        for series in hist.values()
     )
 
     assert_hist("""
