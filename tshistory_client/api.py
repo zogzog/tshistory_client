@@ -85,7 +85,7 @@ class Client:
             to_value_date=None):
         args = {
             'name': name,
-            'mode': 'numpy'
+            'format': 'tshpack'
         }
         if revision_date:
             args['insertion_date'] = strft(revision_date)
@@ -109,7 +109,7 @@ class Client:
         args = {
             'name': name,
             'delta': delta,
-            'mode': 'numpy'
+            'format': 'tshpack'
         }
         if from_value_date:
             args['from_value_date'] = strft(from_value_date)
@@ -132,7 +132,7 @@ class Client:
                 to_value_date=None):
         args = {
             'name': name,
-            'mode': 'numpy'
+            'format': 'tshpack'
         }
         if from_insertion_date:
             args['from_insertion_date'] = strft(from_insertion_date)
