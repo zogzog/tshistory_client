@@ -1,5 +1,7 @@
 import pandas as pd
+import pytest
 
+from tshistory import tsio
 from tshistory.testutil import (
     assert_df,
     assert_hist,
@@ -168,3 +170,18 @@ insertion_date             value_date
                            2015-01-02 00:00:00    0.0
                            2015-01-02 01:00:00    1.0
 """, hist)
+
+
+def test_multisources(client, engine):
+    series = genserie(utcdt(2020, 1, 1), 'D', 3)
+    tsh = tsio.timeseries('other')
+
+    tsh.update(engine, series, 'test-other', 'Babar')
+
+    client.update('test-mainsource', series, 'Babar')
+    with pytest.raises(ValueError) as err:
+        client.update('test-other', series, 'Babar')
+    assert err.value.args[0] == 'not allowed to update to a secondary source'
+    with pytest.raises(ValueError) as err:
+        client.replace('test-other', series, 'Babar')
+    assert err.value.args[0] == 'not allowed to replace to a secondary source'

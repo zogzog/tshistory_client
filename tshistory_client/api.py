@@ -63,7 +63,9 @@ class Client:
             'insertion_date': insertion_date.isoformat() if insertion_date else None,
             'tzaware': tzaware_serie(series)
         })
-        assert res.status_code in (200, 201)
+        assert res.status_code in (200, 201, 405)
+        if res.status_code == 405:
+            raise ValueError(res.json()['message'])
 
     def replace(self, name, series, author, insertion_date=None):
         res = requests.patch(f'{self.baseuri}/series/state', data={
@@ -74,7 +76,9 @@ class Client:
             'tzaware': tzaware_serie(series),
             'replace': True
         })
-        assert res.status_code in (200, 201)
+        assert res.status_code in (200, 201, 405)
+        if res.status_code == 405:
+            raise ValueError(res.json()['message'])
 
     def metadata(self, name, update=None, internal=False):
         if update is not None:

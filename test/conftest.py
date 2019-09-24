@@ -14,6 +14,7 @@ from tshistory_rest import app
 from tshistory_client import api
 
 DATADIR = Path(__file__).parent / 'data'
+DBURI = 'postgresql://localhost:5433/postgres'
 
 
 @pytest.fixture(scope='session')
@@ -22,8 +23,10 @@ def engine(request):
         'timezone': 'UTC',
         'log_timezone': 'UTC'}
     )
-    e = create_engine('postgresql://localhost:5433/postgres')
+    e = create_engine(DBURI)
     sch = tsschema()
+    sch.create(e)
+    sch = tsschema('other')
     sch.create(e)
     return e
 
@@ -89,7 +92,12 @@ URI = 'http://test-uri'
 
 @pytest.fixture(scope='session')
 def client(engine):
-    wsgitester = WebTester(app.make_app(engine.url))
+    wsgitester = WebTester(
+        app.make_app(
+            engine.url,
+            sources=[(DBURI, 'other')]
+        )
+    )
     with responses.RequestsMock(assert_all_requests_are_fired=False) as resp:
         resp.add_callback(
             responses.GET, 'http://test-uri/series/state',
