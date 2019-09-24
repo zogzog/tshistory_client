@@ -89,7 +89,7 @@ URI = 'http://test-uri'
 
 @pytest.fixture(scope='session')
 def client(engine):
-    wsgitester = WebTester(app.make_app(engine))
+    wsgitester = WebTester(app.make_app(engine.url))
     with responses.RequestsMock(assert_all_requests_are_fired=False) as resp:
         resp.add_callback(
             responses.GET, 'http://test-uri/series/state',
