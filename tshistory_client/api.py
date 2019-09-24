@@ -80,20 +80,20 @@ class Client:
         if res.status_code == 405:
             raise ValueError(res.json()['message'])
 
-    def metadata(self, name, update=None, internal=False):
-        if update is not None:
-            assert isinstance(update, dict)
-            res = requests.put(f'{self.baseuri}/series/metadata', data={
-                'name': name,
-                'metadata': json.dumps(update)
-            })
-            return res.status_code
-
+    def metadata(self, name, all=False):
         res = requests.get(f'{self.baseuri}/series/metadata', params={
             'name': name,
-            'all': int(internal)
+            'all': int(all)
         })
+        assert res.status_code in (200, 404)
         return res.json()
+
+    def update_metadata(self, name, metadata):
+        assert isinstance(metadata, dict)
+        res = requests.put(f'{self.baseuri}/series/metadata', data={
+            'name': name,
+            'metadata': json.dumps(metadata)
+        })
 
     def get(self, name,
             revision_date=None,

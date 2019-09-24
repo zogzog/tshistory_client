@@ -59,7 +59,7 @@ def test_base(client, engine, tsh):
     assert len(ts) == 0
     assert ts.name == 'test'
 
-    meta = client.metadata('test', internal=True)
+    meta = client.metadata('test', all=True)
     assert meta == {
         'tzaware': True,
         'index_type': 'datetime64[ns, UTC]',
@@ -69,9 +69,9 @@ def test_base(client, engine, tsh):
     }
 
     # update
-    client.metadata('test', update={'desc': 'banana spot price'})
+    client.update_metadata('test', {'desc': 'banana spot price'})
 
-    meta = client.metadata('test', internal=False)
+    meta = client.metadata('test', all=False)
     assert meta == {
         'desc': 'banana spot price',
     }
