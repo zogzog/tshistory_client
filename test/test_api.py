@@ -91,7 +91,7 @@ def test_base(client, engine, tsh):
     assert d2 > d1
 
     client.insert('test2', series_in, 'Babar')
-    series = client.list_series()
+    series = client.catalog()
     assert series == {
         'test': 'primary',
         'test2': 'primary'

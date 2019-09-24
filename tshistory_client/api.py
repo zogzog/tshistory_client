@@ -156,7 +156,7 @@ class Client:
             series.name = name
         return hist
 
-    def list_series(self):
+    def catalog(self):
         res = requests.get(f'{self.baseuri}/series/catalog')
         assert res.status_code == 200
 
