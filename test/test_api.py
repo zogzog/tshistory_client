@@ -20,7 +20,7 @@ def test_base(client, engine, tsh):
     }
 
     series_in = genserie(utcdt(2018, 1, 1), 'H', 3)
-    client.insert('test', series_in, 'Babar',
+    client.update('test', series_in, 'Babar',
                   insertion_date=utcdt(2019, 1, 1))
     assert client.exists('test')
 
@@ -76,7 +76,7 @@ def test_base(client, engine, tsh):
 
     # check the insertion_date
     series_in = genserie(utcdt(2018, 1, 2), 'H', 3)
-    client.insert('test', series_in, 'Babar',
+    client.update('test', series_in, 'Babar',
                   insertion_date=utcdt(2019, 1, 2))
 
     v1 = client.get('test', revision_date=utcdt(2019, 1, 1))
@@ -90,12 +90,21 @@ def test_base(client, engine, tsh):
     assert d1 == utcdt(2019, 1, 1)
     assert d2 > d1
 
-    client.insert('test2', series_in, 'Babar')
+    client.update('test2', series_in, 'Babar')
     series = client.catalog()
     assert series == {
         'test': 'primary',
         'test2': 'primary'
     }
+
+    client.replace('test2', genserie(utcdt(2020, 1, 1), 'D', 3), 'Babar')
+    series = client.get('test2')
+    assert_df("""
+2020-01-01 00:00:00+00:00    0.0
+2020-01-02 00:00:00+00:00    1.0
+2020-01-03 00:00:00+00:00    2.0
+""", series)
+
 
 
 def test_staircase_history(client, tsh):
@@ -104,7 +113,7 @@ def test_staircase_history(client, tsh):
                                               end=utcdt(2015, 1, 4),
                                               freq='D')):
         series = genserie(start=idate, freq='H', repeat=7)
-        client.insert(
+        client.update(
             'staircase',
             series, 'Babar',
             insertion_date=idate
