@@ -1,7 +1,7 @@
 TSHISTORY CLIENT
 ================
 
-This library provides easy access to tshistory instances exposed with
+This library provides easy access to [tshistory][tshistory] instances exposed with
 the help of [tshistory_rest][tshistory_rest] (http end points).
 
 
@@ -18,3 +18,4 @@ Most of the base `tshistory` api is available from there.
 
 
 [tshistory_rest]: https://bitbucket.org/pythonian/tshistory_rest
+[tshistory]: https://bitbucket.org/pythonian/tshistory
