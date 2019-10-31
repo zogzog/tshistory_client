@@ -94,7 +94,7 @@ URI = 'http://test-uri'
 def client(engine):
     wsgitester = WebTester(
         app.make_app(
-            engine.url,
+            str(engine.url),
             sources=[(DBURI, 'other')]
         )
     )
