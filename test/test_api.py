@@ -79,6 +79,7 @@ def test_base(client, engine, tsh):
     # check the insertion_date
     series_in = genserie(utcdt(2018, 1, 2), 'H', 3)
     client.update('test', series_in, 'Babar',
+                  metadata={'event': 'hello'},
                   insertion_date=utcdt(2019, 1, 2))
 
     v1 = client.get('test', revision_date=utcdt(2019, 1, 1))

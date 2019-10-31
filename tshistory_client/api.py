@@ -55,30 +55,40 @@ class Client:
             return False
         return True
 
-    def update(self, name, series, author, insertion_date=None):
-        res = requests.patch(f'{self.baseuri}/series/state', data={
-            'name': name,
-            'author': author,
-            'series': tojson(series),
-            'insertion_date': insertion_date.isoformat() if insertion_date else None,
-            'tzaware': tzaware_serie(series)
-        })
-        assert res.status_code in (200, 201, 405)
-        if res.status_code == 405:
-            raise ValueError(res.json()['message'])
-
-    def replace(self, name, series, author, insertion_date=None):
-        res = requests.patch(f'{self.baseuri}/series/state', data={
+    def _insert(self, name, series, author,
+                metadata=None, insertion_date=None,
+                replace=False):
+        qdata = {
             'name': name,
             'author': author,
             'series': tojson(series),
             'insertion_date': insertion_date.isoformat() if insertion_date else None,
             'tzaware': tzaware_serie(series),
-            'replace': True
-        })
+            'replace': replace
+        }
+        if metadata:
+            qdata['metadata'] = json.dumps(metadata)
+
+        res = requests.patch(f'{self.baseuri}/series/state', data=qdata)
+
         assert res.status_code in (200, 201, 405)
         if res.status_code == 405:
             raise ValueError(res.json()['message'])
+
+    def update(self, name, series, author, metadata=None, insertion_date=None):
+        return self._insert(
+            name, series, author,
+            metadata=metadata,
+            insertion_date=insertion_date
+        )
+
+    def replace(self, name, series, author, metadata=None, insertion_date=None):
+        return self._insert(
+            name, series, author,
+            metadata=metadata,
+            insertion_date=insertion_date,
+            replace=True
+        )
 
     def metadata(self, name, all=False):
         res = requests.get(f'{self.baseuri}/series/metadata', params={
