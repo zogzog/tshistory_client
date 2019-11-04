@@ -49,6 +49,9 @@ class Client:
         self.baseuri = uri
         self.tzcache = {}
 
+    def __repr__(self):
+        return f"tshistory-http-client(uri='{self.baseuri}')"
+
     def exists(self, name):
         meta = self.metadata(name)
         if 'message' in meta and meta['message'].endswith('does not exists'):

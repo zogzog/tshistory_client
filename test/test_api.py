@@ -11,6 +11,8 @@ from tshistory.testutil import (
 
 
 def test_base(client, engine, tsh):
+    assert repr(client) == "tshistory-http-client(uri='http://test-uri')"
+
     ts = client.get('no-such-series')
     assert ts is None
 
