@@ -42,15 +42,15 @@ def decodeseries(name, bytestream):
 
 
 class Client:
-    baseuri = None
+    uri = None
     tzcache = None
 
     def __init__(self, uri):
-        self.baseuri = uri
+        self.uri = uri
         self.tzcache = {}
 
     def __repr__(self):
-        return f"tshistory-http-client(uri='{self.baseuri}')"
+        return f"tshistory-http-client(uri='{self.uri}')"
 
     def exists(self, name):
         meta = self.metadata(name)
@@ -72,7 +72,7 @@ class Client:
         if metadata:
             qdata['metadata'] = json.dumps(metadata)
 
-        res = requests.patch(f'{self.baseuri}/series/state', data=qdata)
+        res = requests.patch(f'{self.uri}/series/state', data=qdata)
 
         assert res.status_code in (200, 201, 405)
         if res.status_code == 405:
@@ -94,7 +94,7 @@ class Client:
         )
 
     def metadata(self, name, all=False):
-        res = requests.get(f'{self.baseuri}/series/metadata', params={
+        res = requests.get(f'{self.uri}/series/metadata', params={
             'name': name,
             'all': int(all)
         })
@@ -103,7 +103,7 @@ class Client:
 
     def update_metadata(self, name, metadata):
         assert isinstance(metadata, dict)
-        res = requests.put(f'{self.baseuri}/series/metadata', data={
+        res = requests.put(f'{self.uri}/series/metadata', data={
             'name': name,
             'metadata': json.dumps(metadata)
         })
@@ -123,7 +123,7 @@ class Client:
         if to_value_date:
             args['to_value_date'] = strft(to_value_date)
         res = requests.get(
-            f'{self.baseuri}/series/state', params=args
+            f'{self.uri}/series/state', params=args
         )
         if res.status_code == 404:
             return None
@@ -145,7 +145,7 @@ class Client:
         if to_value_date:
             args['to_value_date'] = strft(to_value_date)
         res = requests.get(
-            f'{self.baseuri}/series/staircase', params=args
+            f'{self.uri}/series/staircase', params=args
         )
         if res.status_code == 404:
             return None
@@ -172,7 +172,7 @@ class Client:
         if to_value_date:
             args['to_value_date'] = strft(to_value_date)
         res = requests.get(
-            f'{self.baseuri}/series/history', params=args
+            f'{self.uri}/series/history', params=args
         )
         if res.status_code == 404:
             return None
@@ -185,7 +185,7 @@ class Client:
         return hist
 
     def catalog(self):
-        res = requests.get(f'{self.baseuri}/series/catalog')
+        res = requests.get(f'{self.uri}/series/catalog')
         assert res.status_code == 200
 
         return res.json()
