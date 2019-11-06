@@ -110,6 +110,11 @@ def client(engine):
         )
 
         resp.add_callback(
+            responses.DELETE, 'http://test-uri/series/state',
+            callback=write_request_bridge(wsgitester.delete)
+        )
+
+        resp.add_callback(
             responses.GET, 'http://test-uri/series/staircase',
             callback=partial(read_request_bridge, wsgitester)
         )

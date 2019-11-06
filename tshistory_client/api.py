@@ -197,3 +197,10 @@ class Client:
         )
         assert res.status_code == 200
 
+    def delete(self, name):
+        res = requests.delete(
+            f'{self.uri}/series/state',
+            data={'name': name}
+        )
+        assert res.status_code == 200
+

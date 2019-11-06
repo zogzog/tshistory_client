@@ -114,6 +114,9 @@ def test_base(client, engine, tsh):
     assert not client.exists('test2')
     assert client.exists('test3')
 
+    client.delete('test3')
+    assert not client.exists('test3')
+
 
 def test_staircase_history(client, tsh):
     # each days we insert 7 data points
