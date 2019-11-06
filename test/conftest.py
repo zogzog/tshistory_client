@@ -105,6 +105,11 @@ def client(engine):
         )
 
         resp.add_callback(
+            responses.PUT, 'http://test-uri/series/state',
+            callback=write_request_bridge(wsgitester.put)
+        )
+
+        resp.add_callback(
             responses.GET, 'http://test-uri/series/staircase',
             callback=partial(read_request_bridge, wsgitester)
         )

@@ -189,3 +189,11 @@ class Client:
         assert res.status_code == 200
 
         return res.json()
+
+    def rename(self, oldname, newname):
+        res = requests.put(
+            f'{self.uri}/series/state',
+            data={'name': oldname, 'newname': newname}
+        )
+        assert res.status_code == 200
+
