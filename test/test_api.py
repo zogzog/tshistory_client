@@ -110,6 +110,9 @@ def test_base(client, engine, tsh):
 2020-01-03 00:00:00+00:00    2.0
 """, series)
 
+    type = client.type('test2')
+    assert type == 'primary'
+
     client.rename('test2', 'test3')
     assert not client.exists('test2')
     assert client.exists('test3')

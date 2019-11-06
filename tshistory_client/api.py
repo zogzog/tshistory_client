@@ -184,6 +184,15 @@ class Client:
             series.name = name
         return hist
 
+    def type(self, name):
+        res = requests.get(f'{self.uri}/series/metadata', params={
+            'name': name,
+            'type': 'type'
+        })
+        assert res.status_code in (200, 404)
+        if res.status_code == 200:
+            return res.json()
+
     def catalog(self):
         res = requests.get(f'{self.uri}/series/catalog')
         assert res.status_code == 200
