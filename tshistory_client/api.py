@@ -193,6 +193,21 @@ class Client:
         if res.status_code == 200:
             return res.json()
 
+    def interval(self, name):
+        res = requests.get(f'{self.uri}/series/metadata', params={
+            'name': name,
+            'type': 'interval'
+        })
+        assert res.status_code in (200, 404)
+        if res.status_code == 200:
+            tzaware, left, right = res.json()
+            tz = 'utc' if tzaware else None
+            return pd.Interval(
+                pd.Timestamp(left, tz=tz),
+                pd.Timestamp(right, tz=tz),
+                closed='both'
+            )
+
     def catalog(self):
         res = requests.get(f'{self.uri}/series/catalog')
         assert res.status_code == 200

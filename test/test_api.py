@@ -113,6 +113,10 @@ def test_base(client, engine, tsh):
     type = client.type('test2')
     assert type == 'primary'
 
+    ival = client.interval('test2')
+    assert ival.left == pd.Timestamp('2020-01-01 00:00:00+0000', tz='UTC')
+    assert ival.right == pd.Timestamp('2020-01-03 00:00:00+0000', tz='UTC')
+
     client.rename('test2', 'test3')
     assert not client.exists('test2')
     assert client.exists('test3')
