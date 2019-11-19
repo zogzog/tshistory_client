@@ -12,18 +12,17 @@ from tshistory.testutil import (
 
 def test_naive(client, engine, tsh):
     series_in = genserie(pd.Timestamp('2018-1-1'), 'H', 3)
-    client.update('test', series_in, 'Babar',
+    client.update('test-naive', series_in, 'Babar',
                   insertion_date=utcdt(2019, 1, 1))
-    assert client.exists('test')
 
     # now let's get it back
-    ts = client.get('test')
+    ts = client.get('test-naive')
     assert_df("""
-2018-01-01 00:00:00+00:00    0.0
-2018-01-01 01:00:00+00:00    1.0
-2018-01-01 02:00:00+00:00    2.0
+2018-01-01 00:00:00    0.0
+2018-01-01 01:00:00    1.0
+2018-01-01 02:00:00    2.0
 """, ts)
-    assert ts.index.dtype.tz.zone == 'UTC'
+    assert not getattr(ts.index.dtype, 'tz', False)
 
 
 def test_base(client, engine, tsh):
@@ -113,10 +112,8 @@ def test_base(client, engine, tsh):
 
     client.update('test2', series_in, 'Babar')
     series = client.catalog()
-    assert series == {
-        'test': 'primary',
-        'test2': 'primary'
-    }
+    assert series['test'] == 'primary'
+    assert series['test2'] == 'primary'
 
     client.replace('test2', genserie(utcdt(2020, 1, 1), 'D', 3), 'Babar')
     series = client.get('test2')
