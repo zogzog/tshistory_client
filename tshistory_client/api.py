@@ -212,7 +212,10 @@ class Client:
         res = requests.get(f'{self.uri}/series/catalog')
         assert res.status_code == 200
 
-        return res.json()
+        return {
+            tuple(k.split('!')): v
+            for k, v in res.json().items()
+        }
 
     def rename(self, oldname, newname):
         res = requests.put(

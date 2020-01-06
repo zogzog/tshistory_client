@@ -112,8 +112,8 @@ def test_base(client, engine, tsh):
 
     client.update('test2', series_in, 'Babar')
     series = client.catalog()
-    assert series['test'] == 'primary'
-    assert series['test2'] == 'primary'
+    assert ['test', 'primary'] in series[('db://localhost:5433/postgres', 'tsh')]
+    assert ['test2', 'primary'] in series[('db://localhost:5433/postgres', 'tsh')]
 
     client.replace('test2', genserie(utcdt(2020, 1, 1), 'D', 3), 'Babar')
     series = client.get('test2')
