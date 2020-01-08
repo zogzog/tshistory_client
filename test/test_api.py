@@ -214,3 +214,19 @@ def test_multisources(client, engine):
     with pytest.raises(ValueError) as err:
         client.replace('test-other', series, 'Babar')
     assert err.value.args[0] == 'not allowed to replace to a secondary source'
+
+    cat = client.catalog()
+    assert cat == {
+        ('db://localhost:5433/postgres', 'other'): [
+            ['test-other', 'primary']
+        ],
+        ('db://localhost:5433/postgres', 'tsh'): [
+            ['test-naive', 'primary'],
+            ['test', 'primary'],
+            ['staircase', 'primary'],
+            ['test-mainsource', 'primary']
+        ]
+    }
+    cat = client.catalog(allsources=False)
+    assert ('db://localhost:5433/postgres', 'tsh') in cat
+    assert ('db://localhost:5433/postgres', 'other') not in cat

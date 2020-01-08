@@ -208,8 +208,10 @@ class Client:
                 closed='both'
             )
 
-    def catalog(self):
-        res = requests.get(f'{self.uri}/series/catalog')
+    def catalog(self, allsources=True):
+        res = requests.get(f'{self.uri}/series/catalog', params={
+        'allsources': allsources
+        })
         assert res.status_code == 200
 
         return {
