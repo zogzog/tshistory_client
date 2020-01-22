@@ -158,10 +158,14 @@ class Client:
                 from_insertion_date=None,
                 to_insertion_date=None,
                 from_value_date=None,
-                to_value_date=None):
+                to_value_date=None,
+                diffmode=False,
+                _keep_nans=False):
         args = {
             'name': name,
-            'format': 'tshpack'
+            'format': 'tshpack',
+            'diffmode': json.dumps(diffmode),
+            '_keep_nans': json.dumps(_keep_nans)
         }
         if from_insertion_date:
             args['from_insertion_date'] = strft(from_insertion_date)
