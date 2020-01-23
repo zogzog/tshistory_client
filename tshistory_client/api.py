@@ -202,7 +202,7 @@ class Client:
             'name': name,
             'type': 'interval'
         })
-        assert res.status_code in (200, 404)
+        assert res.status_code in (200, 204, 404)
         if res.status_code == 200:
             tzaware, left, right = res.json()
             tz = 'utc' if tzaware else None
@@ -211,6 +211,7 @@ class Client:
                 pd.Timestamp(right, tz=tz),
                 closed='both'
             )
+        raise ValueError(f'no interval for series: {name}')
 
     def catalog(self, allsources=True):
         res = requests.get(f'{self.uri}/series/catalog', params={
