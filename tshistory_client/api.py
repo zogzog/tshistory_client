@@ -229,12 +229,12 @@ class Client:
             f'{self.uri}/series/state',
             data={'name': oldname, 'newname': newname}
         )
-        assert res.status_code == 200
+        assert res.status_code == 204
 
     def delete(self, name):
         res = requests.delete(
             f'{self.uri}/series/state',
             data={'name': name}
         )
-        assert res.status_code == 200
+        assert res.status_code == 204
 
