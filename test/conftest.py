@@ -10,8 +10,10 @@ from sqlalchemy import create_engine
 
 from tshistory.schema import tsschema
 from tshistory.tsio import timeseries
+from tshistory import api as tsapi
 from tshistory_rest import app
 from tshistory_client import api
+
 
 DATADIR = Path(__file__).parent / 'data'
 DBURI = 'postgresql://localhost:5433/postgres'
@@ -94,8 +96,10 @@ URI = 'http://test-uri'
 def client(engine):
     wsgitester = WebTester(
         app.make_app(
-            str(engine.url),
-            sources=[(DBURI, 'other')]
+            tsapi.timeseries(
+                str(engine.url),
+                sources=[(DBURI, 'other')]
+            )
         )
     )
     with responses.RequestsMock(assert_all_requests_are_fired=False) as resp:
