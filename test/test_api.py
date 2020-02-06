@@ -201,6 +201,81 @@ insertion_date             value_date
 """, hist)
 
 
+def test_staircase_history_naive(client, tsh):
+    # each days we insert 7 data points
+    from datetime import datetime
+    for idx, idate in enumerate(pd.date_range(start=utcdt(2015, 1, 1),
+                                              end=utcdt(2015, 1, 4),
+                                              freq='D')):
+        series = genserie(
+            start=idate.tz_convert(None),
+            freq='H',
+            repeat=7
+        )
+        client.update(
+            'staircase-naive',
+            series, 'Babar',
+            insertion_date=idate
+        )
+
+    series = client.staircase(
+        'staircase-naive',
+        pd.Timedelta(hours=3),
+        from_value_date=datetime(2015, 1, 1, 4),
+        to_value_date=datetime(2015, 1, 2, 5)
+    )
+    assert series.name == 'staircase-naive'
+
+    assert_df("""
+2015-01-01 04:00:00    4.0
+2015-01-01 05:00:00    5.0
+2015-01-01 06:00:00    6.0
+2015-01-02 03:00:00    3.0
+2015-01-02 04:00:00    4.0
+2015-01-02 05:00:00    5.0
+""", series)
+
+    # series = client.staircase(
+    #     'staircase-naive',
+    #     pd.Timedelta(hours=3),
+    #     from_value_date=datetime(2015, 1, 1, 4),
+    #     to_value_date=datetime(2015, 1, 2, 5)
+    # )
+
+    hist = client.history('staircase-naive')
+    assert len(hist) == 4
+    hist = client.history(
+        'staircase-naive',
+        from_insertion_date=datetime(2015, 1, 2),
+        to_insertion_date=datetime(2015, 1, 3)
+    )
+    assert len(hist) == 2
+    hist = client.history(
+        'staircase-naive',
+        from_value_date=datetime(2015, 1, 1, 3),
+        to_value_date=datetime(2015, 1, 2, 1)
+    )
+
+    assert all(
+        series.name == 'staircase-naive'
+        for series in hist.values()
+    )
+
+    assert_hist("""
+insertion_date             value_date         
+2015-01-01 00:00:00+00:00  2015-01-01 03:00:00    3.0
+                           2015-01-01 04:00:00    4.0
+                           2015-01-01 05:00:00    5.0
+                           2015-01-01 06:00:00    6.0
+2015-01-02 00:00:00+00:00  2015-01-01 03:00:00    3.0
+                           2015-01-01 04:00:00    4.0
+                           2015-01-01 05:00:00    5.0
+                           2015-01-01 06:00:00    6.0
+                           2015-01-02 00:00:00    0.0
+                           2015-01-02 01:00:00    1.0
+""", hist)
+
+
 def test_multisources(client, engine):
     series = genserie(utcdt(2020, 1, 1), 'D', 3)
     tsh = tsio.timeseries('other')
@@ -224,6 +299,7 @@ def test_multisources(client, engine):
             ['test-naive', 'primary'],
             ['test', 'primary'],
             ['staircase', 'primary'],
+            ['staircase-naive', 'primary'],
             ['test-mainsource', 'primary']
         ]
     }
