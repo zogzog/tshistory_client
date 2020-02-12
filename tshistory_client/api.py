@@ -7,13 +7,11 @@ import pytz
 
 from tshistory.util import (
     nary_unpack,
-    fromjson,
     numpy_deserialize,
     tojson,
     tzaware_serie,
     unpack_history
 )
-from tshistory.testutil import utcdt
 
 
 def strft(dt):
@@ -131,8 +129,8 @@ class Client:
         return decodeseries(name, res.content)
 
     def staircase(self, name, delta,
-            from_value_date=None,
-            to_value_date=None):
+                  from_value_date=None,
+                  to_value_date=None):
         args = {
             'name': name,
             'delta': delta,
@@ -181,7 +179,7 @@ class Client:
         res.raise_for_status()
         assert res.status_code == 200
 
-        meta, hist = unpack_history(res.content)
+        _meta, hist = unpack_history(res.content)
         for series in hist.values():
             series.name = name
         return hist
@@ -213,7 +211,7 @@ class Client:
 
     def catalog(self, allsources=True):
         res = requests.get(f'{self.uri}/series/catalog', params={
-        'allsources': allsources
+            'allsources': allsources
         })
         assert res.status_code == 200
 
