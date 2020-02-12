@@ -19,6 +19,22 @@ DATADIR = Path(__file__).parent / 'data'
 DBURI = 'postgresql://localhost:5433/postgres'
 
 
+def handler():
+    try:
+        from tshistory_formula.tsio import timeseries
+    except ImportError:
+        from tshistory.timeseries import timeseries
+    return timeseries
+
+
+def has_formula():
+    try:
+        from tshistory_formula.tsio import timeseries
+    except ImportError:
+        return False
+    return True
+
+
 @pytest.fixture(scope='session')
 def engine(request):
     db.setup_local_pg_cluster(request, DATADIR, 5433, {
@@ -30,12 +46,16 @@ def engine(request):
     sch.create(e)
     sch = tsschema('other')
     sch.create(e)
+    if has_formula():
+        from tshistory_formula.schema import formula_schema
+        formula_schema().create(e)
+        formula_schema('other').create(e)
     return e
 
 
 @pytest.fixture
 def tsh(request, engine):
-    return timeseries()
+    return handler()()
 
 
 class WebTester(webtest.TestApp):
@@ -98,6 +118,7 @@ def client(engine):
         app.make_app(
             tsapi.timeseries(
                 str(engine.url),
+                handler=handler(),
                 sources=[(DBURI, 'other')]
             )
         )
@@ -146,6 +167,16 @@ def client(engine):
         resp.add_callback(
             responses.PUT, 'http://test-uri/series/metadata',
             callback=write_request_bridge(wsgitester.put)
+        )
+
+        resp.add_callback(
+            responses.GET, 'http://test-uri/series/formula',
+            callback=partial(read_request_bridge, wsgitester)
+        )
+
+        resp.add_callback(
+            responses.PATCH, 'http://test-uri/series/formula',
+            callback=write_request_bridge(wsgitester.patch)
         )
 
         yield api.Client(URI)

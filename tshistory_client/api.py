@@ -234,3 +234,37 @@ class Client:
         )
         assert res.status_code == 204
 
+    # formula
+
+    def formula(self, name):
+        res = requests.get(
+            f'{self.uri}/series/formula', params={
+                'name': name
+            }
+        )
+        if res.status_code == 200:
+            return res.json()
+        return  # None is the reasonable api answer
+
+    def register_formula(self, name,
+                         formula,
+                         reject_unknown=True,
+                         update=False):
+        res = requests.patch(
+            f'{self.uri}/series/formula', data={
+                'name': name,
+                'text': formula,
+                'reject_unknown': reject_unknown,
+                'force_update': update
+            }
+        )
+        if res.status_code == 400:
+            raise SyntaxError(res.json()['message'])
+        elif res.status_code == 409:
+            msg = res.json()['message']
+            if 'unknown' in msg:
+                raise ValueError(msg)
+            elif 'exists' in msg:
+                raise AssertionError(msg)
+
+        return res.json()

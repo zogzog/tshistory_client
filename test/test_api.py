@@ -276,6 +276,64 @@ insertion_date             value_date
 """, hist)
 
 
+def test_formula(client, engine, tsh):
+    tsh.update(
+        engine,
+        pd.Series(
+            [1, 2, 3],
+            index=pd.date_range(
+                pd.Timestamp('2020-1-1', tz='UTC'),
+                freq='D',
+                periods=3
+            )
+        ),
+        'in-a-formula',
+        'Babar'
+    )
+
+    with pytest.raises(SyntaxError):
+        client.register_formula(
+            'new-formula',
+            '(+ 3'
+        )
+
+    with pytest.raises(ValueError):
+        client.register_formula(
+            'new-formula',
+            '(+ 3 (series "lol"))'
+        )
+
+    client.register_formula(
+        'new-formula',
+        '(+ 3 (series "lol"))',
+        reject_unknown=False
+    )
+
+
+    with pytest.raises(AssertionError):
+        client.register_formula(
+            'new-formula',
+            '(+ 3 (series "in-a-formula"))',
+        )
+
+
+    client.register_formula(
+        'new-formula',
+        '(+ 3 (series "in-a-formula"))',
+        update=True
+    )
+
+    series = client.get('new-formula')
+    assert_df("""
+2020-01-01 00:00:00+00:00    4.0
+2020-01-02 00:00:00+00:00    5.0
+2020-01-03 00:00:00+00:00    6.0
+""", series)
+
+    assert client.formula('new-formula') == '(+ 3 (series "in-a-formula"))'
+    assert client.formula('lol') is None
+
+
 def test_multisources(client, engine):
     series = genserie(utcdt(2020, 1, 1), 'D', 3)
     tsh = tsio.timeseries('other')
@@ -300,7 +358,9 @@ def test_multisources(client, engine):
             ['test', 'primary'],
             ['staircase', 'primary'],
             ['staircase-naive', 'primary'],
-            ['test-mainsource', 'primary']
+            ['in-a-formula', 'primary'],
+            ['test-mainsource', 'primary'],
+            ['new-formula', 'formula']
         ]
     }
     cat = client.catalog(allsources=False)
