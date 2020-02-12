@@ -43,11 +43,9 @@ def decodeseries(name, bytestream):
 
 class Client:
     uri = None
-    tzcache = None
 
     def __init__(self, uri):
         self.uri = uri
-        self.tzcache = {}
 
     def __repr__(self):
         return f"tshistory-http-client(uri='{self.uri}')"
